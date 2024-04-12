@@ -5,6 +5,7 @@ import java.sql.Date;
 import com.brlopes.Model.enums.TransactionEnum;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -27,15 +28,20 @@ public class Transactions {
     private Date date;
     private Double tax;
     private Double totalAmmount;
+    
+    @Enumerated
     private TransactionEnum state;
     
     @ManyToOne
     private Client client;
+    @ManyToOne
+    private Client destinyClient;
     
     public Transactions() {
     }
     
-    public Transactions(Double value, Date date, Double tax, Double totalAmmount, Client client, TransactionEnum state) {
+    public Transactions(Client destinyClient, Double value, Date date, Double tax, Double totalAmmount, Client client, TransactionEnum state) {
+        this.destinyClient = destinyClient;
         this.value = value;
         this.date = date;
         this.tax = tax;

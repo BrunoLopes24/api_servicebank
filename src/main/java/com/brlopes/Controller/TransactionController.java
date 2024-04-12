@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -18,6 +19,8 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.brlopes.Model.Transactions;
 import com.brlopes.Service.TransactionsService;
 import com.brlopes.dto.TransactionDTO;
+
+
 
 @RestController
 @RequestMapping("/transactions")
@@ -41,11 +44,15 @@ public class TransactionController {
         }
     }
     
-    
     @PostMapping("/add") // Create
     public ResponseEntity<?> addTransaction(@RequestHeader("Authorization") String token, @RequestBody Transactions transaction) {
         transaction = transactionsService.insert(token, transaction);
         return ResponseEntity.ok().body(transaction);
     }
     
+    @GetMapping("/{id}")
+    public ResponseEntity<Transactions> findById(@PathVariable Long id) {
+        Transactions transaction = transactionsService.findById(id);
+        return ResponseEntity.ok().body(transaction);
+    }
 }

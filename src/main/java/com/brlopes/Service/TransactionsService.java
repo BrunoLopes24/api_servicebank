@@ -1,5 +1,7 @@
 package com.brlopes.Service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -11,6 +13,7 @@ import com.brlopes.Model.Client;
 import com.brlopes.Model.Transactions;
 import com.brlopes.Repository.ClientRepo;
 import com.brlopes.Repository.TransactionRepo;
+import com.brlopes.Service.exceptions.ResourceNotFoundException;
 
 @Service
 public class TransactionsService {
@@ -57,6 +60,12 @@ public class TransactionsService {
         // Aqui você pode adicionar lógica de verificação de token, se necessário
         verifyToken(token);
         return transactionRepo.findAll();
+    }
+
+    public Transactions findById(Long id){
+        Optional<Transactions> transaction = transactionRepo.findById(id);
+
+        return transaction.orElseThrow(()-> new ResourceNotFoundException(id));
     }
     
 }

@@ -49,7 +49,7 @@ public class TransactionController {
         return new TransactionDTO(
         transaction.getDate(),
         transaction.getTotalAmmount(),
-        transaction.getClient().getName(),
+        transaction.getClass().getName(),
         transaction.getClient().getAge()
         );
     }
@@ -60,7 +60,7 @@ public class TransactionController {
             Transactions newTransaction = transactionsService.insert(token, transaction);
             return ResponseEntity.ok(newTransaction);
         } catch (TokenExpiredException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token JWT expirado. Faça o Registo/Login novamente para adicionar transacção");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token JWT expirado. Faça o Registo/Login novamente para adicionar transacção.");
         } catch (DataIntegrityViolationException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }

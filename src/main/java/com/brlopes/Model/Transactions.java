@@ -9,6 +9,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.Data;
 import lombok.Getter;
@@ -33,20 +34,21 @@ public class Transactions {
     private TransactionEnum state;
     
     @ManyToOne
+    @JoinColumn(name = "sender_client_id") // Nome da coluna na tabela de Transactions que armazena o ID do cliente que enviou a transação
     private Client client;
+    
     @ManyToOne
+    @JoinColumn(name = "destiny_client_id") // Nome da coluna na tabela de Transactions que armazena o ID do cliente destinatário da transação
     private Client destinyClient;
     
     public Transactions() {
     }
     
-    public Transactions(Client destinyClient, Double value, Date date, Double tax, Double totalAmmount, Client client, TransactionEnum state) {
-        this.destinyClient = destinyClient;
+    public Transactions(Double value, Date date, Double tax, Double totalAmmount,TransactionEnum state) {
         this.value = value;
         this.date = date;
         this.tax = tax;
         this.totalAmmount = totalAmmount;
-        this.client = client;
         this.state = state;
     }
 }

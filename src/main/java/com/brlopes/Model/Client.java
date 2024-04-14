@@ -33,8 +33,12 @@ public class Client {
     
     @JsonIgnore
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Transactions> transactions;
-    
+    private List<Transactions> sentTransactions;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "destinyClient", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Transactions> receiveTransactions;
+
     public Client() {
     }
     
@@ -46,7 +50,7 @@ public class Client {
         this.age = age;
     }
     
-    public void setPassword(String password) { // Gera o hash da senha com o bcrypt
+    public void setPassword(String password) {
         this.password = BCrypt.withDefaults().hashToString(12, password.toCharArray());
     }
 }

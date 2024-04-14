@@ -40,7 +40,7 @@ public class TransactionsService {
             return transaction;
         } catch (com.auth0.jwt.exceptions.TokenExpiredException e) {
             // Lidar com o token expirado
-            throw new TokenExpiredException("Token JWT expirado. Faça o Registo/Login novamente para adicionar transacção.");
+            throw new TokenExpiredException("");
         } catch (DataIntegrityViolationException e) {
             // Se houver uma violação de integridade de dados, lançar uma exceção específica
             throw e;

@@ -15,9 +15,10 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.brlopes.Model.Transactions;
 import com.brlopes.Service.TransactionsService;
+import com.brlopes.Service.exceptions.DataIntegrityViolationException;
+import com.brlopes.Service.exceptions.TokenExpiredException;
 import com.brlopes.dto.TransactionDTO;
 
 
@@ -35,20 +36,37 @@ public class TransactionController {
             Iterable<Transactions> transactions = transactionsService.findAll(token);
             
             List<TransactionDTO> transactionDTOs = StreamSupport.stream(transactions.spliterator(), false)
-            .map(transaction -> new TransactionDTO(transaction.getDate(), transaction.getTotalAmmount(),
-            transaction.getClient().getName(), transaction.getClient().getAge()))
+            .map(this::mapToTransactionDTO)
             .collect(Collectors.toList());
+            
             return ResponseEntity.ok().body(transactionDTOs);
-        } catch (JWTVerificationException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Make Login first");
+        } catch (TokenExpiredException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Inválido. Faça o Registo/Login primeiro para ver todas as transacções");
         }
     }
     
-    @PostMapping("/add") // Create
-    public ResponseEntity<?> addTransaction(@RequestHeader("Authorization") String token, @RequestBody Transactions transaction) {
-        transaction = transactionsService.insert(token, transaction);
-        return ResponseEntity.ok().body(transaction);
+    private TransactionDTO mapToTransactionDTO(Transactions transaction) {
+        return new TransactionDTO(
+        transaction.getDate(),
+        transaction.getTotalAmmount(),
+        transaction.getClient().getName(),
+        transaction.getClient().getAge()
+        );
     }
+    
+    @PostMapping("/add")
+    public ResponseEntity<Object> addTransaction(@RequestBody Transactions transaction, @RequestHeader("Authorization") String token) {
+        try {
+            Transactions newTransaction = transactionsService.insert(token, transaction);
+            return ResponseEntity.ok(newTransaction);
+        } catch (TokenExpiredException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token JWT expirado. Faça o Registo/Login novamente para adicionar transacção");
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+    
+    
     
     @GetMapping("/{id}")
     public ResponseEntity<Transactions> findById(@PathVariable Long id) {

@@ -3,17 +3,16 @@ package com.brlopes.Service;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.brlopes.Model.Client;
 import com.brlopes.Model.Transactions;
 import com.brlopes.Repository.ClientRepo;
 import com.brlopes.Repository.TransactionRepo;
+import com.brlopes.Service.exceptions.DataIntegrityViolationException;
 import com.brlopes.Service.exceptions.ResourceNotFoundException;
+import com.brlopes.Service.exceptions.TokenExpiredException;
 
 @Service
 public class TransactionsService {
@@ -32,28 +31,34 @@ public class TransactionsService {
             transaction = transactionRepo.save(transaction);
             
             // Verificando se o cliente existe na base de dados
-            Client client = transaction.getClient();
-            if (clientRepo.findById(client.getClient_id()).isEmpty()) {
-                // Se o cliente não existir, lançar uma exceção
+            Long clientId = transaction.getClient().getClient_id();
+            if (!clientRepo.existsById(clientId)) {
+                // Se o cliente não existir, lançar uma exceção com mensagem específica
                 throw new DataIntegrityViolationException("O cliente não existe na base de dados");
             }
-            
-            // Se o token for válido e o cliente existir, retornar a transação
+            // Retornar a transação após a inserção
             return transaction;
-        } catch (JWTVerificationException e) {
-            // Se o token for inválido, lançar uma exceção ou lidar com ela de acordo com suas necessidades
-            throw new RuntimeException("Token JWT inválido", e); // Lançar uma exceção genérica
+        } catch (com.auth0.jwt.exceptions.TokenExpiredException e) {
+            // Lidar com o token expirado
+            throw new TokenExpiredException("Token JWT expirado. Faça o Registo/Login novamente para adicionar transacção.");
         } catch (DataIntegrityViolationException e) {
-            throw new DataIntegrityViolationException("Não é possível adicionar uma transação sem um cliente na base de dados");
+            // Se houver uma violação de integridade de dados, lançar uma exceção específica
+            throw e;
         }
     }
     
     
     private void verifyToken(String token) {
         // Verificar o token JWT usando a mesma chave secreta que foi usada para criar o token
-        Algorithm algorithm = Algorithm.HMAC256("servicebank");
-        JWT.require(algorithm).build().verify(token);
+        try {
+            Algorithm algorithm = Algorithm.HMAC256("servicebank");
+            JWT.require(algorithm).build().verify(token);
+        } catch (TokenExpiredException e) {
+            // Lançar exceção se o token estiver expirado
+            throw new TokenExpiredException("Token JWT expirado. Faça o Registo/Login novamente para adicionar transacção");
+        }
     }
+    
     
     
     public Iterable<Transactions> findAll(String token){ // Read
@@ -61,10 +66,10 @@ public class TransactionsService {
         verifyToken(token);
         return transactionRepo.findAll();
     }
-
+    
     public Transactions findById(Long id){
         Optional<Transactions> transaction = transactionRepo.findById(id);
-
+        
         return transaction.orElseThrow(()-> new ResourceNotFoundException(id));
     }
     

@@ -13,6 +13,7 @@ import com.brlopes.Repository.ClientRepo;
 import com.brlopes.Repository.TransactionRepo;
 import com.brlopes.Service.exceptions.DataIntegrityViolationException;
 import com.brlopes.Service.exceptions.ResourceNotFoundException;
+import com.brlopes.Service.exceptions.SameClientException;
 import com.brlopes.Service.exceptions.TokenExpiredException;
 
 @Service
@@ -29,7 +30,7 @@ public class TransactionsService {
             verifyToken(token);
             
             if (transaction.getClient() == null || transaction.getDestinyClient() == null) {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("O cliente ou o cliente destino não podem ser nulos");
             }
             
             // Verificando se os clientes existem na base de dados
@@ -37,8 +38,14 @@ public class TransactionsService {
             Client destinyClient = transaction.getDestinyClient();
             Long clientId = client.getClient_id();
             Long destinyClientId = destinyClient.getClient_id();
+            
+            // Verificando se os IDs dos clientes são iguais
+            if (clientId.equals(destinyClientId)) {
+                throw new SameClientException("");
+            }
+            
             if (!clientRepo.existsById(clientId) || !clientRepo.existsById(destinyClientId)) {
-                throw new DataIntegrityViolationException("");
+                throw new DataIntegrityViolationException("Um dos clientes não existe na base de dados");
             }
             
             // Salvando a transação na base de dados
@@ -49,6 +56,8 @@ public class TransactionsService {
             throw e;
         }
     }
+    
+    
     
     
     private void verifyToken(String token) {

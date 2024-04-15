@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.brlopes.Model.Transactions;
 import com.brlopes.Service.TransactionsService;
 import com.brlopes.Service.exceptions.DataIntegrityViolationException;
+import com.brlopes.Service.exceptions.SameClientException;
 import com.brlopes.Service.exceptions.TokenExpiredException;
 import com.brlopes.dto.TransactionDTO;
 
@@ -65,6 +66,8 @@ public class TransactionController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Um dos clientes não existe na base de dados");
         } catch (IllegalArgumentException e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("O cliente ou o cliente destino não podem ser nulos");
+        } catch (SameClientException e ){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Os IDs do cliente e do cliente destino não podem ser iguais");
         }
 
     }

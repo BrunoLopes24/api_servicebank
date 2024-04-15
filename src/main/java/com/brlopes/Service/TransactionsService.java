@@ -29,7 +29,7 @@ public class TransactionsService {
             verifyToken(token);
             
             if (transaction.getClient() == null || transaction.getDestinyClient() == null) {
-                throw new IllegalArgumentException("O cliente ou o cliente destino não podem ser nulos");
+                throw new IllegalArgumentException();
             }
             
             // Verificando se os clientes existem na base de dados
@@ -38,7 +38,7 @@ public class TransactionsService {
             Long clientId = client.getClient_id();
             Long destinyClientId = destinyClient.getClient_id();
             if (!clientRepo.existsById(clientId) || !clientRepo.existsById(destinyClientId)) {
-                throw new DataIntegrityViolationException("Um dos clientes não existe na base de dados");
+                throw new DataIntegrityViolationException("");
             }
             
             // Salvando a transação na base de dados

@@ -62,8 +62,11 @@ public class TransactionController {
         } catch (TokenExpiredException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token JWT expirado. Faça o Registo/Login novamente para adicionar transacção.");
         } catch (DataIntegrityViolationException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Um dos clientes não existe na base de dados");
+        } catch (IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("O cliente ou o cliente destino não podem ser nulos");
         }
+
     }
     
     

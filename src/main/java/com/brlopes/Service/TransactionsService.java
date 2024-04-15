@@ -57,26 +57,28 @@ public class TransactionsService {
         }
     }
     
-    
-    
-    
     private void verifyToken(String token) {
         Algorithm algorithm = Algorithm.HMAC256("servicebank");
         JWT.require(algorithm).build().verify(token);
     }
     
-    
-    
     public Iterable<Transactions> findAll(String token){ // Read
-        // Aqui você pode adicionar lógica de verificação de token, se necessário
-        verifyToken(token);
-        return transactionRepo.findAll();
+        try {
+            verifyToken(token);
+            return transactionRepo.findAll();
+        } catch (com.auth0.jwt.exceptions.TokenExpiredException e) {
+            throw new TokenExpiredException("");
+        }
     }
     
-    public Transactions findById(Long id){
-        Optional<Transactions> transaction = transactionRepo.findById(id);
-        
-        return transaction.orElseThrow(()-> new ResourceNotFoundException(id));
+    public Transactions findById(String token, Long id){
+        try{
+            verifyToken(token);
+            Optional<Transactions> transaction = transactionRepo.findById(id);
+            return transaction.orElseThrow(()-> new ResourceNotFoundException(id));
+            
+        } catch (com.auth0.jwt.exceptions.TokenExpiredException e) {
+            throw new TokenExpiredException("");
+        }
     }
-    
 }

@@ -51,4 +51,6 @@ public class Transactions {
         this.totalAmmount = totalAmmount;
         this.state = state;
     }
+
+    
 }

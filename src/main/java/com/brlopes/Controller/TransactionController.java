@@ -1,5 +1,6 @@
 package com.brlopes.Controller;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.brlopes.Model.Transactions;
 import com.brlopes.Service.TransactionsService;
 import com.brlopes.Service.exceptions.DataIntegrityViolationException;
+import com.brlopes.Service.exceptions.ErrorResponse;
 import com.brlopes.Service.exceptions.SameClientException;
 import com.brlopes.Service.exceptions.TokenExpiredException;
 import com.brlopes.dto.TransactionDTO;
@@ -31,52 +33,56 @@ public class TransactionController {
     @Autowired
     private TransactionsService transactionsService;
     
-    @GetMapping("/")
-    public ResponseEntity<?> findAllTransactions(@RequestHeader(name = "Authorization", required = false) String token) {
+    @GetMapping("/") // Read
+    public ResponseEntity<?> findAll(@RequestHeader("Authorization") String token) {
         try {
             Iterable<Transactions> transactions = transactionsService.findAll(token);
             
-            List<TransactionDTO> transactionDTOs = StreamSupport.stream(transactions.spliterator(), false)
-            .map(this::mapToTransactionDTO)
+            List<TransactionDTO> transactionList = StreamSupport.stream(transactions.spliterator(), false)
+            .map(transaction -> new TransactionDTO(
+            transaction.getDate(),
+            transaction.getTotalAmmount(),
+            transaction.getDestinyClient()))
             .collect(Collectors.toList());
             
-            return ResponseEntity.ok().body(transactionDTOs);
+            return ResponseEntity.ok().body(transactionList);
         } catch (TokenExpiredException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Inválido. Faça o Registo/Login primeiro para ver todas as transacções");
+            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED, "Invalid Token. Please Register/Login first to view all transactions");
+            return ResponseEntity.status(errorResponse.getStatus()).body(Collections.singletonList(errorResponse));
         }
     }
     
-    private TransactionDTO mapToTransactionDTO(Transactions transaction) {
-        return new TransactionDTO(
-        transaction.getDate(),
-        transaction.getTotalAmmount(),
-        transaction.getClass().getName(),
-        transaction.getClient().getAge()
-        );
-    }
     
     @PostMapping("/add")
-    public ResponseEntity<Object> addTransaction(@RequestBody Transactions transaction, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> addTransaction(@RequestBody Transactions transaction, @RequestHeader("Authorization") String token) {
         try {
             Transactions newTransaction = transactionsService.insert(token, transaction);
             return ResponseEntity.ok(newTransaction);
         } catch (TokenExpiredException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token JWT expirado. Faça o Registo/Login novamente para adicionar transacção.");
+            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED, "Invalid Token. Please Register/Login first to add transactions");
+            return ResponseEntity.status(errorResponse.getStatus()).body(Collections.singletonList(errorResponse));
         } catch (DataIntegrityViolationException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Um dos clientes não existe na base de dados");
+            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, "One of the customers does not exist in the database");
+            return ResponseEntity.status(errorResponse.getStatus()).body(Collections.singletonList(errorResponse));
         } catch (IllegalArgumentException e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("O cliente ou o cliente destino não podem ser nulos");
+            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, "The client or target client cannot be null");
+            return ResponseEntity.status(errorResponse.getStatus()).body(Collections.singletonList(errorResponse));
         } catch (SameClientException e ){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Os IDs do cliente e do cliente destino não podem ser iguais");
+            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, "Client and target Client IDs cannot be the same");
+            return ResponseEntity.status(errorResponse.getStatus()).body(Collections.singletonList(errorResponse));
         }
-
     }
     
     
     
     @GetMapping("/{id}")
-    public ResponseEntity<Transactions> findById(@PathVariable Long id) {
-        Transactions transaction = transactionsService.findById(id);
-        return ResponseEntity.ok().body(transaction);
+    public ResponseEntity<?> findById(@RequestHeader("Authorization") String token, @PathVariable Long id) {
+        try {
+            Transactions transaction = transactionsService.findById(token, id);
+            return ResponseEntity.ok().body(transaction);
+        } catch (TokenExpiredException e) {
+            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED, "Invalid Token. Please Register/Login first to check Client ID transactions");
+            return ResponseEntity.status(errorResponse.getStatus()).body(Collections.singletonList(errorResponse));
+        }  
     }
 }

@@ -1,6 +1,5 @@
 package com.brlopes.Controller;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -47,29 +46,29 @@ public class TransactionController {
             
             return ResponseEntity.ok().body(transactionList);
         } catch (TokenExpiredException e) {
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED, "Invalid Token. Please Register/Login first to view all transactions");
-            return ResponseEntity.status(errorResponse.getStatus()).body(Collections.singletonList(errorResponse));
+            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED, "Invalid Token. Please Register/Login first to check Client ID transactions");
+            return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
         }
     }
     
     
     @PostMapping("/add")
-    public ResponseEntity<?> addTransaction(@RequestBody Transactions transaction, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<ErrorResponse> addTransaction(@RequestBody Transactions transaction, @RequestHeader("Authorization") String token) {
         try {
-            Transactions newTransaction = transactionsService.insert(token, transaction);
-            return ResponseEntity.ok(newTransaction);
+            transactionsService.insert(token, transaction);
+            return ResponseEntity.ok().build();
         } catch (TokenExpiredException e) {
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED, "Invalid Token. Please Register/Login first to add transactions");
-            return ResponseEntity.status(errorResponse.getStatus()).body(Collections.singletonList(errorResponse));
+            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED, "Invalid Token. Please Register/Login first to check Client ID transactions");
+            return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
         } catch (DataIntegrityViolationException e) {
             ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, "One of the customers does not exist in the database");
-            return ResponseEntity.status(errorResponse.getStatus()).body(Collections.singletonList(errorResponse));
+            return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
         } catch (IllegalArgumentException e){
             ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, "The client or target client cannot be null");
-            return ResponseEntity.status(errorResponse.getStatus()).body(Collections.singletonList(errorResponse));
+            return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
         } catch (SameClientException e ){
             ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, "Client and target Client IDs cannot be the same");
-            return ResponseEntity.status(errorResponse.getStatus()).body(Collections.singletonList(errorResponse));
+            return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
         }
     }
     
@@ -82,7 +81,7 @@ public class TransactionController {
             return ResponseEntity.ok().body(transaction);
         } catch (TokenExpiredException e) {
             ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED, "Invalid Token. Please Register/Login first to check Client ID transactions");
-            return ResponseEntity.status(errorResponse.getStatus()).body(Collections.singletonList(errorResponse));
+            return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
         }  
     }
 }

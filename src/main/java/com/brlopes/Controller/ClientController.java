@@ -1,6 +1,6 @@
 package com.brlopes.Controller;
 
-import java.util.Collections;
+import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -25,7 +25,7 @@ import com.brlopes.dto.ClientDTO;
 
 @RestController
 @RequestMapping("/client")
-public class ClientController {
+public class ClientController implements Serializable {
     
     @Autowired
     private ClientService clientService;
@@ -42,7 +42,7 @@ public class ClientController {
             return ResponseEntity.ok().body(listDTO);
         }  catch (TokenExpiredException e) {
             ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED, "Invalid Token. Please Register/Login first to view all transactions");
-            return ResponseEntity.status(errorResponse.getStatus()).body(Collections.singletonList(errorResponse));
+            return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
         }
     }
     
@@ -50,41 +50,42 @@ public class ClientController {
     @GetMapping("/{id}") // Read 
     public ResponseEntity<?> findbyId(@RequestHeader("Authorization") String token, @PathVariable Long id) {
         try {
-            Client client = clientService.findById(token,id);
+            Client client = clientService.findById(token, id);
             return ResponseEntity.ok().body(client);
         } catch (TokenExpiredException e) {
             ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED, "Invalid Token. Please Register/Login first to check Client ID transactions");
-            return ResponseEntity.status(errorResponse.getStatus()).body(Collections.singletonList(errorResponse));
-        }catch (com.brlopes.Service.exceptions.NoClientIdException e) {
+            return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
+        } catch (com.brlopes.Service.exceptions.NoClientIdException e) {
             ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, "Client not found in DataBase. Register first.");
-            return ResponseEntity.status(errorResponse.getStatus()).body(Collections.singletonList(errorResponse));
+            return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
         }
     }
     
+    
     @DeleteMapping("/{id}") // Delete (by ID)
-    public ResponseEntity<?> deletebyId(@RequestHeader("Authorization") String token,@PathVariable Long id) {
+    public ResponseEntity<ErrorResponse> deletebyId(@RequestHeader("Authorization") String token,@PathVariable Long id) {
         try {
             clientService.deletebyId(token, id);
             return ResponseEntity.noContent().build();
             
         } catch (TokenExpiredException e) {
             ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED, "Invalid Token. Please Register/Login first to check Client ID transactions");
-            return ResponseEntity.status(errorResponse.getStatus()).body(Collections.singletonList(errorResponse));
+            return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
         }
     }
     
     @PutMapping("update/{id}") // Update (by ID)
-    public ResponseEntity<?> updateById(@RequestHeader("Authorization") String token,@PathVariable Long id, @RequestBody Client client){
+    public ResponseEntity<ErrorResponse> updateById(@RequestHeader("Authorization") String token,@PathVariable Long id, @RequestBody Client client){
         try {
             client = clientService.updateById(token ,id, client);
-            return ResponseEntity.ok().body(client);
+            return ResponseEntity.ok().build();
             
         } catch (TokenExpiredException e) {
             ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED, "Invalid Token. Please Register/Login first to update Client ID");
-            return ResponseEntity.status(errorResponse.getStatus()).body(Collections.singletonList(errorResponse));
+            return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
         } catch (com.brlopes.Service.exceptions.NoClientIdException e) {
             ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, "Client not found in DataBase. Register first.");
-            return ResponseEntity.status(errorResponse.getStatus()).body(Collections.singletonList(errorResponse));
+            return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
         }
     }
     

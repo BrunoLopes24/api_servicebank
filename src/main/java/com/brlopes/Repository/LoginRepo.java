@@ -1,10 +1,10 @@
 package com.brlopes.Repository;
 
-import org.springframework.data.repository.CrudRepository;
-
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import com.brlopes.Model.Login;
 
-public interface LoginRepo extends CrudRepository<Login, Long> {
-
+public interface LoginRepo extends JpaRepository<Login, Long> {
+    UserDetails findByUsername(String username);
 }

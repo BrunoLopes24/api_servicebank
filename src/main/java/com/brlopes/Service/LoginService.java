@@ -5,12 +5,16 @@ import java.util.Date;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.brlopes.Model.Client;
 import com.brlopes.Model.Login;
+import com.brlopes.Model.enums.LoginRoles;
 import com.brlopes.Repository.ClientRepo;
 import com.brlopes.Repository.LoginRepo;
 import com.brlopes.Service.exceptions.AuthenticationException;
@@ -19,14 +23,14 @@ import com.brlopes.Service.exceptions.ResourceNotFoundException;
 import at.favre.lib.crypto.bcrypt.BCrypt;
 
 @Service
-public class LoginService {
+public class LoginService implements UserDetailsService {
     
     @Autowired
     private ClientRepo clientRepo;
     @Autowired
     private LoginRepo loginRepo;
     
-    public ResponseEntity<String> authenticateUser(String username, String password) {
+    public ResponseEntity<String> authenticateUser(String username, String password, LoginRoles role) {
         try {
             // Buscar o cliente pelo username
             Client client = clientRepo.findByUsername(username);
@@ -50,7 +54,7 @@ public class LoginService {
             .withExpiresAt(expiresAt) // Defina a expiração do token
             .sign(algorithm);
             
-            saveLogin(username, token, expiresAt.toString());
+            saveLogin(username, role);
             return ResponseEntity.ok(token);
         } catch (AuthenticationException e) {
             // Se a autenticação falhar devido a senha inválida, retornar uma mensagem de erro com status 401
@@ -61,14 +65,18 @@ public class LoginService {
         }
     }
     
-    public void saveLogin(String username, String jwt_token, String jwt_time) {
+    public void saveLogin(String username, LoginRoles role) {
         // Crie uma nova instância de Login com os dados fornecidos
         Login login = new Login();
         login.setUsername(username);
-        login.setJwt_token(jwt_token);
-        login.setJwt_timeLimit(jwt_time);
+        login.setRole(role);
         
         // Salve a instância no banco de dados
         loginRepo.save(login);
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return loginRepo.findByUsername(username);
     }
 }

@@ -53,13 +53,24 @@ public class TransactionController {
     @PostMapping("/add")
     public ResponseEntity<ErrorResponse> addTransaction(@RequestBody TransactionDTO request) {
         try {
-            // Extract client names from the request body
+            // Verificar os valores recebidos
             String clientName = request.getClientName();
             String destinyClientName = request.getDestinyClientName();
-            // Extract transaction details from the request body
+            
+            System.out.println("Received clientName: " + clientName);
+            System.out.println("Received destinyClientName: " + destinyClientName);
+            
+            // Se um dos nomes de cliente é nulo, lança uma exceção
+            if (clientName == null || destinyClientName == null) {
+                throw new IllegalArgumentException("The client or destiny client cannot be null, check if one of them have money.");
+            }
+            
+            // Extrair detalhes da transação
             Transactions transaction = request.getTransaction();
             
+            // Realizar a transação
             transactionsService.insert(transaction, clientName, destinyClientName);
+            
             return ResponseEntity.ok().build();
         } catch (DataIntegrityViolationException e) {
             ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, "One of the customers does not exist in the database");
@@ -67,11 +78,12 @@ public class TransactionController {
         } catch (IllegalArgumentException e){
             ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, "The client or destiny client cannot be null");
             return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
-        } catch (SameClientException e ){
+        } catch (SameClientException e){
             ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, "Client and destiny client name cannot be the same");
             return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
         }
     }
+    
     
     
     

@@ -26,38 +26,53 @@ public class TransactionsService {
     
     public Transactions insert(Transactions transaction, String clientName, String destinyClientName) {
         try {
-            
+            // Verifies that customer names have been provided
             if (clientName == null || destinyClientName == null) {
                 throw new IllegalArgumentException("The name of the destiny client or client cannot be null");
             }
             
-            // Procura os clientes pela nome
+            // Search for customers by name
             Client client = clientRepo.findByName(clientName);
             Client destinyClient = clientRepo.findByName(destinyClientName);
             
+            // Checks if customers exist
             if (client == null || destinyClient == null) {
                 throw new DataIntegrityViolationException("One of the clients does not exist in the database");
             }
             
-            // Verifica se os clientes são os mesmos
+            // Verify that customers are the same
             if (client.getClient_id().equals(destinyClient.getClient_id())) {
                 throw new SameClientException("The clients cannot be the same");
             }
             
-            // Associa clientes à transação
+            // Checks if the sender has enough balance
+            if (client.getBalance() < transaction.getValue()) {
+                throw new IllegalArgumentException("Sender does not have enough balance for the transaction");
+            }
+            
+            // Associates customers with the transaction
             transaction.setClient(client);
             transaction.setDestinyClient(destinyClient);
             
-            // Calcula o valor total da transação
+            // Calculates the total amount of the transaction
             double totalAmount = transaction.getValue() + transaction.getTax();
             transaction.setTotalAmmount(totalAmount);
             
-            // Guarda a transação na base de dados
+            // Updates the balance of the sender and receiver
+            client.setBalance(client.getBalance() - transaction.getValue());
+            destinyClient.setBalance(destinyClient.getBalance() + transaction.getValue());
+            
+            // Updates the balance of the sender and receiver
+            clientRepo.save(client);
+            clientRepo.save(destinyClient);
+            
+            // Saves the transaction to the database
             return transactionRepo.save(transaction);
         } catch (DataIntegrityViolationException | IllegalArgumentException | SameClientException e) {
             throw e;
         }
     }
+    
     
     
     public Iterable<Transactions> findAll(){ // Read

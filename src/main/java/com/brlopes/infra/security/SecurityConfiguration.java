@@ -27,7 +27,7 @@ public class SecurityConfiguration {
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(authorize -> authorize
         .requestMatchers(HttpMethod.POST, "auth/login").permitAll()
-        .requestMatchers(HttpMethod.POST, "auth/register").permitAll() // In normal situation, this endpoint should be allowed only to ADMIN.
+        .requestMatchers(HttpMethod.POST, "auth/register").permitAll()
         .requestMatchers(HttpMethod.GET, "/client/").hasRole("ADMIN") // findAll()
         .requestMatchers(HttpMethod.GET, "/client/{id}").hasRole("ADMIN") // findById()
         .requestMatchers(HttpMethod.POST, "/client/add").hasRole("ADMIN") // addClient()

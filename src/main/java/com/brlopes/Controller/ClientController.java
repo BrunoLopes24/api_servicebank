@@ -18,6 +18,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.brlopes.Model.Client;
+import com.brlopes.Model.Login;
+import com.brlopes.Model.enums.LoginRoles;
+import com.brlopes.Repository.LoginRepo;
 import com.brlopes.Service.ClientService;
 import com.brlopes.Service.exceptions.ErrorResponse;
 import com.brlopes.Service.exceptions.NoClientIdException;
@@ -29,6 +32,8 @@ public class ClientController implements Serializable {
     
     @Autowired
     private ClientService clientService;
+    @Autowired
+    private LoginRepo loginRepo;
     
     @GetMapping("/") // Read - NORMAL CLIENT ROLE
     public ResponseEntity<?> findAll() {
@@ -41,9 +46,12 @@ public class ClientController implements Serializable {
     }
     
     @PostMapping("/add")  // Create - ADMIN ROLE
-    public ResponseEntity<?> addClient(@RequestBody Client client){
-        clientService.insert(client);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Client> addClient(@RequestBody Client client){
+        client.setRole(LoginRoles.CLIENT);
+        Login login = new Login(client.getUsername(), client.getPassword(), client.getRole());
+        loginRepo.save(login); // Guarda o login na tabela de Logins
+        clientService.insert(client); // Em seguida, guarda o cliente
+        return ResponseEntity.ok().body(client);
     }
     
     @GetMapping("/{id}") // Read - ADMIN ROLE

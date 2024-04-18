@@ -2,6 +2,7 @@ package com.brlopes.Model;
 
 import java.util.List;
 
+import com.brlopes.Model.enums.LoginRoles;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
@@ -30,15 +31,16 @@ public class Client {
     private String email;
     private String password;
     private Integer age;
+    private LoginRoles role;
     
     @JsonIgnore
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Transactions> sentTransactions;
-
+    
     @JsonIgnore
     @OneToMany(mappedBy = "destinyClient", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Transactions> receiveTransactions;
-
+    
     public Client() {
     }
     
@@ -48,6 +50,7 @@ public class Client {
         this.email = email;
         setPassword(password);
         this.age = age;
+        this.role = LoginRoles.CLIENT;
     }
     
     public void setPassword(String password) {

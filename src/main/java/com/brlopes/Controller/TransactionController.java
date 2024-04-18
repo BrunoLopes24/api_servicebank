@@ -23,8 +23,6 @@ import com.brlopes.Service.exceptions.ErrorResponse;
 import com.brlopes.Service.exceptions.SameClientException;
 import com.brlopes.dto.TransactionDTO;
 
-
-
 @RestController
 @RequestMapping("/transactions")
 public class TransactionController {
@@ -39,36 +37,34 @@ public class TransactionController {
         List<TransactionDTO> transactionList = StreamSupport.stream(transactions.spliterator(), false)
         .map(transaction -> new TransactionDTO(
         transaction.getTotalAmmount(),
-        transaction.getClient().getName(), // Assuming getClient() and getName() methods are defined
-        transaction.getDestinyClient().getName(), // Same assumption as above
-        transaction.getDate().toString() // Ensure formatting as necessary
+        transaction.getClient().getName(),
+        transaction.getDestinyClient().getName(),
+        transaction.getDate().toString()
         ))
         .collect(Collectors.toList());
         
         return ResponseEntity.ok().body(transactionList);
     }
     
-    
-    
     @PostMapping("/add")
     public ResponseEntity<ErrorResponse> addTransaction(@RequestBody TransactionDTO request) {
         try {
-            // Verificar os valores recebidos
+            // Check the Received Amounts
             String clientName = request.getClientName();
             String destinyClientName = request.getDestinyClientName();
             
             System.out.println("Received clientName: " + clientName);
             System.out.println("Received destinyClientName: " + destinyClientName);
             
-            // Se um dos nomes de cliente é nulo, lança uma exceção
+            // If one of the customer names has no money on balance, throws an exception
             if (clientName == null || destinyClientName == null) {
                 throw new IllegalArgumentException("The client or destiny client cannot be null, check if one of them have money.");
             }
             
-            // Extrair detalhes da transação
+            // Extract transaction details
             Transactions transaction = request.getTransaction();
             
-            // Realizar a transação
+            // Execute the transaction
             transactionsService.insert(transaction, clientName, destinyClientName);
             
             return ResponseEntity.ok().build();
@@ -84,10 +80,6 @@ public class TransactionController {
         }
     }
     
-    
-    
-    
-    
     @GetMapping("/{id}") // Read (by ID) - ADMIN ROLE
     public ResponseEntity<?> findById(@PathVariable Long id) {
         Transactions transaction = transactionsService.findById(id);
@@ -101,7 +93,7 @@ public class TransactionController {
         
     }
     
-    @PostMapping("/deposit")
+    @PostMapping("/deposit") // Deposit money to Client account - ADMIN ROLE
     public ResponseEntity<Transactions> addDeposit(@RequestBody Transactions transaction, @RequestParam String clientName) {
         try {
             Transactions addedTransaction = transactionsService.addDeposit(transaction, clientName);

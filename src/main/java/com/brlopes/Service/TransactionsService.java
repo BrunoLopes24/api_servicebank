@@ -24,34 +24,37 @@ public class TransactionsService {
     private ClientRepo clientRepo;
     
     
-    public Transactions insert(Transactions transaction) {
+    public Transactions insert(Transactions transaction, String clientName, String destinyClientName) {
         try {
             
-            if (transaction.getClient() == null || transaction.getDestinyClient() == null) {
-                throw new IllegalArgumentException("O cliente ou o cliente destino não podem ser nulos");
+            if (clientName == null || destinyClientName == null) {
+                throw new IllegalArgumentException("O nome do cliente ou do cliente destino não pode ser nulo");
             }
             
-            // Verificando se os clientes existem na base de dados
-            Client client = transaction.getClient();
-            Client destinyClient = transaction.getDestinyClient();
-            Long clientId = client.getClient_id();
-            Long destinyClientId = destinyClient.getClient_id();
+            // Procura os clientes pela nome
+            Client client = clientRepo.findByName(clientName);
+            Client destinyClient = clientRepo.findByName(destinyClientName);
             
-            // Verificando se os IDs dos clientes são iguais
-            if (clientId.equals(destinyClientId)) {
-                throw new SameClientException("");
-            }
-            
-            if (!clientRepo.existsById(clientId) || !clientRepo.existsById(destinyClientId)) {
+            if (client == null || destinyClient == null) {
                 throw new DataIntegrityViolationException("Um dos clientes não existe na base de dados");
             }
             
-            // Salvando a transação na base de dados
+            // Verifica se os clientes são os mesmos
+            if (client.getClient_id().equals(destinyClient.getClient_id())) {
+                throw new SameClientException("Os clientes envolvidos na transação não podem ser os mesmos");
+            }
+            
+            // Associa clientes à transação
+            transaction.setClient(client);
+            transaction.setDestinyClient(destinyClient);
+            
+            // Guarda a transação na base de dados
             return transactionRepo.save(transaction);
-        } catch (DataIntegrityViolationException | IllegalArgumentException e) {
+        } catch (DataIntegrityViolationException | IllegalArgumentException | SameClientException e) {
             throw e;
         }
     }
+    
     
     public Iterable<Transactions> findAll(){ // Read
         return transactionRepo.findAll();

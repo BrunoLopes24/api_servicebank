@@ -6,4 +6,5 @@ import com.brlopes.Model.Client;
 
 public interface ClientRepo extends JpaRepository<Client, Long> {
     Client findByUsername(String username);
+    Client findByName(String name);
 }

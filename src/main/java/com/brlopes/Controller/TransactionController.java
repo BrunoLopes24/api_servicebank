@@ -37,31 +37,41 @@ public class TransactionController {
         
         List<TransactionDTO> transactionList = StreamSupport.stream(transactions.spliterator(), false)
         .map(transaction -> new TransactionDTO(
-        transaction.getDate(),
         transaction.getTotalAmmount(),
-        transaction.getDestinyClient()))
+        transaction.getClient().getName(), // Assuming getClient() and getName() methods are defined
+        transaction.getDestinyClient().getName(), // Same assumption as above
+        transaction.getDate().toString() // Ensure formatting as necessary
+        ))
         .collect(Collectors.toList());
         
         return ResponseEntity.ok().body(transactionList);
     }
     
     
-    @PostMapping("/add") // Create - NORMAL CLIENT ROLE
-    public ResponseEntity<ErrorResponse> addTransaction(@RequestBody Transactions transaction) {
+    
+    @PostMapping("/add")
+    public ResponseEntity<ErrorResponse> addTransaction(@RequestBody TransactionDTO request) {
         try {
-            transactionsService.insert(transaction);
+            // Extract client names from the request body
+            String clientName = request.getClientName();
+            String destinyClientName = request.getDestinyClientName();
+            // Extract transaction details from the request body
+            Transactions transaction = request.getTransaction();
+            
+            transactionsService.insert(transaction, clientName, destinyClientName);
             return ResponseEntity.ok().build();
         } catch (DataIntegrityViolationException e) {
             ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, "One of the customers does not exist in the database");
             return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
         } catch (IllegalArgumentException e){
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, "The client or target client cannot be null");
+            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, "The client or destiny client cannot be null");
             return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
         } catch (SameClientException e ){
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, "Client and target Client IDs cannot be the same");
+            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, "Client and destiny client name cannot be the same");
             return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
         }
     }
+    
     
     
     

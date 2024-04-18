@@ -32,6 +32,7 @@ public class Client {
     private String password;
     private Integer age;
     private LoginRoles role;
+    private Double balance = 0.0;
     
     @JsonIgnore
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -51,6 +52,7 @@ public class Client {
         setPassword(password);
         this.age = age;
         this.role = LoginRoles.CLIENT;
+        this.balance = 0.0;
     }
     
     public void setPassword(String password) {

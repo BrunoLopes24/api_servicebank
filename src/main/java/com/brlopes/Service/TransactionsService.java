@@ -78,4 +78,28 @@ public class TransactionsService {
             throw new DatabaseException(e.getMessage());
         }
     }
+    
+    public Transactions addDeposit(Transactions transaction, String clientName) {
+        // Verify that the client exists in the database
+        Client client = clientRepo.findByName(clientName);
+        if (client == null) {
+            throw new DataIntegrityViolationException("Client does not exist in the database.");
+        }
+        
+        // Associates the customer with the transaction
+        transaction.setClient(client);
+        
+        // Saves the transaction to the database
+        Transactions savedTransaction = transactionRepo.save(transaction);
+        
+        // Updates the client's balance with the transaction amount
+        double updatedBalance = client.getBalance() + transaction.getValue();
+        client.setBalance(updatedBalance);
+        
+        // Saves the client update to the database
+        clientRepo.save(client);
+        
+        return savedTransaction;
+    }
+    
 }

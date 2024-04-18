@@ -37,6 +37,7 @@ public class SecurityConfiguration {
         .requestMatchers(HttpMethod.POST, "/transactions/add").hasRole("CLIENT") // addTransaction()
         .requestMatchers(HttpMethod.GET, "/transactions/{id}").hasRole("ADMIN") // findById()
         .requestMatchers(HttpMethod.DELETE, "/transactions/{id}").hasRole("ADMIN") // deletebyId()
+        .requestMatchers(HttpMethod.DELETE, "/transactions/deposit").hasRole("ADMIN") // addDeposit()
         .anyRequest()
         .authenticated())
         .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)

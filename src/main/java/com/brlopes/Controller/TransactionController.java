@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.brlopes.Model.Transactions;
@@ -86,5 +87,16 @@ public class TransactionController {
         transactionsService.deletebyId(id);
         return ResponseEntity.noContent().build();
         
+    }
+    
+    @PostMapping("/deposit")
+    public ResponseEntity<Transactions> addDeposit(@RequestBody Transactions transaction, @RequestParam String clientName) {
+        try {
+            Transactions addedTransaction = transactionsService.addDeposit(transaction, clientName);
+            return ResponseEntity.ok(addedTransaction);
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(null);
+        }
     }
 }

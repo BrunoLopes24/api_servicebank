@@ -46,12 +46,16 @@ public class ClientController implements Serializable {
     }
     
     @PostMapping("/add")  // Create - ADMIN ROLE
-    public ResponseEntity<Client> addClient(@RequestBody Client client){
+    public ResponseEntity<ErrorResponse> addClient(@RequestBody Client client){
         client.setRole(LoginRoles.CLIENT);
         Login login = new Login(client.getUsername(), client.getPassword(), client.getRole());
         loginRepo.save(login); // Guarda o login na tabela de Logins
         clientService.insert(client); // Em seguida, guarda o cliente
-        return ResponseEntity.ok().body(client);
+        if (client.getAge() < 18) {
+            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, "Clients under 18 years old cannot have account.");
+            return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
+        }
+        return ResponseEntity.ok().build();
     }
     
     @GetMapping("/{id}") // Read - ADMIN ROLE

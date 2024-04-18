@@ -28,7 +28,7 @@ public class TransactionsService {
         try {
             
             if (clientName == null || destinyClientName == null) {
-                throw new IllegalArgumentException("O nome do cliente ou do cliente destino não pode ser nulo");
+                throw new IllegalArgumentException("The name of the destiny client or client cannot be null");
             }
             
             // Procura os clientes pela nome
@@ -36,12 +36,12 @@ public class TransactionsService {
             Client destinyClient = clientRepo.findByName(destinyClientName);
             
             if (client == null || destinyClient == null) {
-                throw new DataIntegrityViolationException("Um dos clientes não existe na base de dados");
+                throw new DataIntegrityViolationException("One of the clients does not exist in the database");
             }
             
             // Verifica se os clientes são os mesmos
             if (client.getClient_id().equals(destinyClient.getClient_id())) {
-                throw new SameClientException("Os clientes envolvidos na transação não podem ser os mesmos");
+                throw new SameClientException("The clients cannot be the same");
             }
             
             // Associa clientes à transação

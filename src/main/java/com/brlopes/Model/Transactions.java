@@ -46,13 +46,15 @@ public class Transactions {
     public Transactions() {
     }
     
-    public Transactions(Double value, Date date, Double tax, Double totalAmmount,TransactionEnum state) {
+    public Transactions(Double value, Date date, Double tax, TransactionEnum state) {
         this.value = value;
         this.date = date;
         this.tax = tax;
-        this.totalAmmount = totalAmmount;
+        this.totalAmmount = TotalAmmount();
         this.state = state;
     }
-
     
+    private Double TotalAmmount(){
+        return tax + value;
+    }
 }

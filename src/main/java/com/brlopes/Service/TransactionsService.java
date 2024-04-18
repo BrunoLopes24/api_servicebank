@@ -48,6 +48,10 @@ public class TransactionsService {
             transaction.setClient(client);
             transaction.setDestinyClient(destinyClient);
             
+            // Calcula o valor total da transação
+            double totalAmount = transaction.getValue() + transaction.getTax();
+            transaction.setTotalAmmount(totalAmount);
+            
             // Guarda a transação na base de dados
             return transactionRepo.save(transaction);
         } catch (DataIntegrityViolationException | IllegalArgumentException | SameClientException e) {

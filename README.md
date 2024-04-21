@@ -26,10 +26,18 @@ This project, API Service Bank, is designed to provide a comprehensive backend s
 - **Lombok: To reduce boilerplate code for model/data objects**.
 
 ## Setup and Installation
+### Without Docker:
 1. Ensure you have Java JDK and Maven installed on your machine.
 2. Clone the repository to your local machine.
 3. Navigate to the project directory and run `mvn spring-boot:run` to start the application.
 4. The application will be available at `http://localhost:8080`.
+
+### With Docker:
+1. Make sure you have Docker installed on your machine.
+2. Clone the repository to your local machine.
+3. Navigate to the project directory and run the command `docker build -t api_servicebank .` to build the Docker image of the application.
+4. Next, run the command `docker run -p 8080:8080 api_servicebank` to start the container with the application.
+5. The application will be available at `http://localhost:8080`.
 
 ## API Endpoints
 

@@ -1,7 +1,7 @@
 package com.brlopes.Controller;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,49 +35,45 @@ public class TransactionController {
         Iterable<Transactions> transactions = transactionsService.findAll();
         
         List<TransactionDTO> transactionList = StreamSupport.stream(transactions.spliterator(), false)
-        .map(transaction -> new TransactionDTO(
-        transaction.getTotalAmmount(),
-        transaction.getClient().getName(),
-        transaction.getDestinyClient().getName(),
-        transaction.getDate().toString()
-        ))
-        .collect(Collectors.toList());
+        .map(this::mapToDTO)
+        .toList();
         
         return ResponseEntity.ok().body(transactionList);
     }
     
+    private TransactionDTO mapToDTO(Transactions transaction) {
+        return new TransactionDTO(
+        transaction.getTotalAmmount(),
+        transaction.getClient().getName(),
+        transaction.getDestinyClient().getName(),
+        transaction.getDate().toString()
+        );
+    }
+    
     @PostMapping("/add")
-    public ResponseEntity<ErrorResponse> addTransaction(@RequestBody TransactionDTO request) {
+    public ResponseEntity<?> addTransaction(@RequestBody TransactionDTO request) {
+        Optional<String> clientName = Optional.ofNullable(request.getClientName());
+        Optional<String> destinyClientName = Optional.ofNullable(request.getDestinyClientName());
+        
+        if (!clientName.isPresent() || !destinyClientName.isPresent()) {
+            return buildErrorResponse(HttpStatus.BAD_REQUEST, "The client or destiny client cannot be null");
+        }
+        
         try {
-            // Check the Received Amounts
-            String clientName = request.getClientName();
-            String destinyClientName = request.getDestinyClientName();
-            
-            System.out.println("Received clientName: " + clientName);
-            System.out.println("Received destinyClientName: " + destinyClientName);
-            
-            // If one of the customer names has no money on balance, throws an exception
-            if (clientName == null || destinyClientName == null) {
-                throw new IllegalArgumentException("The client or destiny client cannot be null, check if one of them have money.");
-            }
-            
-            // Extract transaction details
-            Transactions transaction = request.getTransaction();
-            
-            // Execute the transaction
-            transactionsService.insert(transaction, clientName, destinyClientName);
-            
+            transactionsService.insert(request.getTransaction(), clientName.get(), destinyClientName.get());
             return ResponseEntity.ok().build();
         } catch (DataIntegrityViolationException e) {
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, "One of the customers does not exist in the database");
-            return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
+            return buildErrorResponse(HttpStatus.BAD_REQUEST, "One of the customers does not exist in the database");
         } catch (IllegalArgumentException e){
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, "The client or destiny client cannot be null");
-            return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
+            return buildErrorResponse(HttpStatus.BAD_REQUEST, "The client or destiny client cannot be null");
         } catch (SameClientException e){
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, "Client and destiny client name cannot be the same");
-            return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
+            return buildErrorResponse(HttpStatus.BAD_REQUEST, "Client and destiny client name cannot be the same");
         }
+    }
+    
+    private ResponseEntity<ErrorResponse> buildErrorResponse(HttpStatus status, String message) {
+        ErrorResponse errorResponse = new ErrorResponse(status, message);
+        return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
     }
     
     @GetMapping("/{id}") // Read (by ID) - ADMIN ROLE

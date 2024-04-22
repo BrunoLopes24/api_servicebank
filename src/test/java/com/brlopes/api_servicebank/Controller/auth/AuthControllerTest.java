@@ -1,4 +1,4 @@
-package com.brlopes.api_servicebank.Controller;
+package com.brlopes.api_servicebank.Controller.auth;
 
 import com.brlopes.Controller.auth.AuthController;
 import com.brlopes.Model.Login;

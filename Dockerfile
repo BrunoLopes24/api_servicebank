@@ -1,20 +1,31 @@
-FROM eclipse-temurin:21-jdk
+# Use a base image with Java 21 (like AdoptOpenJDK)
+FROM openjdk:21-jdk as build
 
-RUN apt-get update && \
-apt-get upgrade -y && \
-apt-get update && \
-apt-get install -y maven && \
-groupadd -g 1000 appuser &&  \
-useradd -r -u 1000 -g appuser appuser
+# Set a working directory
+WORKDIR /workspace/app
 
-WORKDIR /home/appuser
+# Copy the Maven pom.xml
+COPY mvnw .
+COPY .mvn .mvn
+COPY pom.xml .
 
-COPY --chown=appuser:appuser . /home/appuser
+# Download dependencies
+RUN ./mvnw dependency:go-offline
 
-RUN chown -R appuser:appuser /home/appuser
+# Copy the rest of the application
+COPY src src
 
-EXPOSE 8080
+# Build the application
+RUN ./mvnw package -DskipTests
 
-USER appuser
+# Use a smaller base image for the final layer
+FROM openjdk:21-jdk
 
-CMD ["mvn", "spring-boot:run"]
+# Set a working directory
+WORKDIR /app
+
+# Copy the built application from the build layer
+COPY --from=build /workspace/app/target/*.jar app.jar
+
+# Set the startup command
+ENTRYPOINT ["java","-jar","/app/app.jar"]

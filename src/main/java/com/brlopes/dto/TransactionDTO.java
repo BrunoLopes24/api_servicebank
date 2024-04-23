@@ -13,6 +13,9 @@ public class TransactionDTO {
     private String clientName;
     private String destinyClientName;
     private String transactionDate;
+
+    public TransactionDTO() {
+    }
     
     public TransactionDTO(Double totalAmount, String clientName, String destinyClientName, String transactionDate) {
         this.totalAmount = totalAmount;

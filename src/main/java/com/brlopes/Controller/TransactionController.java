@@ -42,13 +42,21 @@ public class TransactionController {
     }
     
     private TransactionDTO mapToDTO(Transactions transaction) {
+        // Handle null cases for client, destiny client, and date
+        String clientName = transaction.getClient() != null ? transaction.getClient().getName() : null;
+        String destinyClientName = transaction.getDestinyClient() != null ? transaction.getDestinyClient().getName() : null;
+        String transactionDate = transaction.getDate() != null ? transaction.getDate().toString() : null;
+        
+        // Return a new TransactionDTO with the mapped properties
         return new TransactionDTO(
         transaction.getTotalAmmount(),
-        transaction.getClient().getName(),
-        transaction.getDestinyClient().getName(),
-        transaction.getDate().toString()
+        clientName,
+        destinyClientName,
+        transactionDate
         );
     }
+    
+    
     
     @PostMapping("/add")
     public ResponseEntity<?> addTransaction(@RequestBody TransactionDTO request) {

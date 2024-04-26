@@ -91,7 +91,8 @@ public class ClientController implements Serializable {
      * @return ResponseEntity<?> This returns the client's balance if the client is found, otherwise an ErrorResponse.
      * @throws NoClientIdException This exception is thrown when the client with the provided ID is not found in the database.
      */
-    public ResponseEntity<?> checkBalancebyId(Long id) {
+    @GetMapping("/balance/{id}")
+    public ResponseEntity<?> checkBalancebyId(@PathVariable Long id) {
         try {
             Client client = clientService.findById(id);
             return ResponseEntity.ok().body(client.getBalance());
@@ -100,5 +101,4 @@ public class ClientController implements Serializable {
             return ResponseEntity.status(errorResponse.getStatus()).body(errorResponse);
         }
     }
-
 }

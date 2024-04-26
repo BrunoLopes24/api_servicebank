@@ -30,6 +30,7 @@ public class SecurityConfiguration {
         .requestMatchers(HttpMethod.POST, "auth/register").permitAll()
         .requestMatchers(HttpMethod.GET, "/client/").hasRole("ADMIN") // findAll()
         .requestMatchers(HttpMethod.GET, "/client/{id}").hasRole("ADMIN") // findById()
+        .requestMatchers(HttpMethod.GET, "/client/balance/{id}").hasRole("CLIENT") // checkBalancebyId()
         .requestMatchers(HttpMethod.POST, "/client/add").hasRole("ADMIN") // addClient()
         .requestMatchers(HttpMethod.DELETE, "/client/{id}").hasRole("ADMIN") // deletebyId()
         .requestMatchers(HttpMethod.PUT, "/client/{id}").hasRole("ADMIN") // updateById()

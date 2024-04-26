@@ -62,4 +62,14 @@ public class ClientService {
             throw new DatabaseException(e.getMessage());
         }
     }
+
+    public double checkBalancebyId(Long id) {
+        Optional<Client> optionalClient = clientRepo.findById(id);
+        if (optionalClient.isPresent()) {
+            Client client = optionalClient.get();
+            return client.getBalance();
+        } else {
+            throw new NoClientIdException("Client not found with id: " + id);
+        }
+    }
 }

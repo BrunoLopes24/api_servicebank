@@ -14,15 +14,38 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+/**
+ * The TransactionsService class provides methods for managing transactions.
+ * It uses the @Service annotation to indicate that it is a Spring Boot service.
+ * It uses the TransactionRepo and ClientRepo repositories for database operations.
+ */
 @Service
 public class TransactionsService {
 
+    /**
+     * The TransactionRepo repository used for transaction database operations.
+     */
     @Autowired
     private TransactionRepo transactionRepo;
+
+    /**
+     * The ClientRepo repository used for client database operations.
+     */
     @Autowired
     private ClientRepo clientRepo;
 
-
+    /**
+     * This method inserts a new transaction into the database.
+     * It performs several checks and calculations before inserting the transaction.
+     *
+     * @param transaction the transaction to be inserted.
+     * @param clientName the name of the client making the transaction.
+     * @param destinyClientName the name of the client receiving the transaction.
+     * @return the inserted transaction.
+     * @throws DataIntegrityViolationException if one of the clients does not exist or if the clients are the same.
+     * @throws IllegalArgumentException if the transaction value or tax is null, or if the sender does not have enough balance.
+     * @throws SameClientException if the clients are the same.
+     */
     public Transactions insert(Transactions transaction, String clientName, String destinyClientName) {
         try {
             // Verifies that customer names have been provided
@@ -83,16 +106,36 @@ public class TransactionsService {
     }
 
 
-
+    /**
+     * This method retrieves all transactions from the database.
+     *
+     * @return an Iterable of all transactions.
+     */
     public Iterable<Transactions> findAll(){ // Read
         return transactionRepo.findAll();
     }
 
+    /**
+     * This method retrieves a transaction by ID from the database.
+     * It throws a ResourceNotFoundException if the transaction does not exist.
+     *
+     * @param id the ID of the transaction.
+     * @return the transaction with the given ID.
+     * @throws ResourceNotFoundException if the transaction does not exist.
+     */
     public Transactions findById(Long id){
         Optional<Transactions> transaction = transactionRepo.findById(id);
         return transaction.orElseThrow(()-> new ResourceNotFoundException(id));
     }
 
+    /**
+     * This method deletes a transaction by ID from the database.
+     * It throws a ResourceNotFoundException if the transaction does not exist.
+     *
+     * @param id the ID of the transaction.
+     * @throws ResourceNotFoundException if the transaction does not exist.
+     * @throws DatabaseException if a database error occurs.
+     */
     public void deletebyId(Long id){ // Delete
         try {
             transactionRepo.deleteById(id);
@@ -103,6 +146,15 @@ public class TransactionsService {
         }
     }
 
+    /**
+     * This method adds a deposit to a client's account.
+     * It updates the client's balance with the transaction amount.
+     *
+     * @param transaction the transaction to be added.
+     * @param clientName the name of the client.
+     * @return the added transaction.
+     * @throws DataIntegrityViolationException if the client does not exist.
+     */
     public Transactions addDeposit(Transactions transaction, String clientName) {
         // Verify that the client exists in the database
         Client client = clientRepo.findByName(clientName);

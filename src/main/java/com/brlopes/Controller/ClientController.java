@@ -18,6 +18,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+/**
+ * The ClientController class handles client-related requests.
+ * It provides endpoints for creating, reading, updating, and deleting clients, as well as checking a client's balance.
+ */
 @RestController
 @RequestMapping("/client")
 public class ClientController implements Serializable {
@@ -27,6 +31,12 @@ public class ClientController implements Serializable {
     @Autowired
     private LoginRepo loginRepo;
 
+    /**
+     * This method handles requests to get all clients.
+     * It retrieves all clients from the database and returns them as a list of ClientDTOs.
+     *
+     * @return ResponseEntity<?> This returns a list of all clients if successful.
+     */
     @GetMapping("/") // Read - NORMAL CLIENT ROLE
     public ResponseEntity<?> findAll() {
         Iterable<Client> list = clientService.findAll();
@@ -37,6 +47,13 @@ public class ClientController implements Serializable {
         return ResponseEntity.ok().body(listDTO);
     }
 
+    /**
+     * This method handles requests to add a new client.
+     * It creates a new client with the provided data and saves it to the database.
+     *
+     * @param client This is the client data provided in the request body.
+     * @return ResponseEntity<ErrorResponse> This returns an OK status code if the client is successfully added, otherwise an ErrorResponse.
+     */
     @PostMapping("/add")  // Create - ADMIN ROLE
     public ResponseEntity<ErrorResponse> addClient(@RequestBody Client client){
         client.setRole(LoginRoles.CLIENT);
@@ -50,6 +67,13 @@ public class ClientController implements Serializable {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * This method handles requests to get a client by their ID.
+     * It retrieves the client with the provided ID from the database and returns it.
+     *
+     * @param id This is the ID of the client to be retrieved.
+     * @return ResponseEntity<?> This returns the client if found, otherwise an ErrorResponse.
+     */
     @GetMapping("/{id}") // Read - ADMIN ROLE
     public ResponseEntity<?> findById(@PathVariable Long id) {
         try {
@@ -61,13 +85,27 @@ public class ClientController implements Serializable {
         }
     }
 
-
+    /**
+     * This method handles requests to delete a client by their ID.
+     * It deletes the client with the provided ID from the database.
+     *
+     * @param id This is the ID of the client to be deleted.
+     * @return ResponseEntity<ErrorResponse> This returns a no content status code if the client is successfully deleted.
+     */
     @DeleteMapping("/{id}") // Delete (by ID) - ADMIN ROLE
     public ResponseEntity<ErrorResponse> deletebyId(@PathVariable Long id) {
         clientService.deletebyId(id);
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * This method handles requests to update a client by their ID.
+     * It updates the client with the provided ID in the database with the provided data.
+     *
+     * @param id This is the ID of the client to be updated.
+     * @param client This is the new client data provided in the request body.
+     * @return ResponseEntity<ErrorResponse> This returns an OK status code if the client is successfully updated, otherwise an ErrorResponse.
+     */
     @PutMapping("/{id}") // Update (by ID) - ADMIN ROLE
     public ResponseEntity<ErrorResponse> updateById(@PathVariable Long id, @RequestBody Client client){
         try {
